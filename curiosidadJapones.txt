@@ -1,0 +1,5 @@
+1. El japonés usa tres sistemas de escritura diferentes: Kanji, Hiragana y Katakana.
+2. Los Kanji son caracteres de origen chino y cada uno puede tener múltiples significados y pronunciaciones.
+3. Hiragana se usa principalmente para palabras gramaticales y para aquellos vocablos que no tienen un Kanji asociado.
+4. Katakana se emplea para palabras extranjeras, nombres propios, y para dar énfasis, similar al uso de cursivas en occidente.
+5. El japonés también utiliza el 'furigana', pequeños caracteres Hiragana o Katakana que se colocan junto a los Kanji para indicar su pronunciación.
