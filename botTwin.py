@@ -3,7 +3,10 @@ from discord.ext import commands
 import random
 import token_1
 import aiohttp
+import asyncio
 
+import subprocess
+import json
 client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 @client.event
@@ -99,5 +102,36 @@ async def agregarH(ctx, *, mensaje: str = None):
 @client.command()
 async def buscarPersonaje(ctx, *, personaje: str):
     pass
+
+@client.command()
+async def buscarPalabra(ctx, *, palabra: str):
+    url = "https://jotoba.de/api/search/words"
+    data = {
+        "query": palabra,
+        "language": "Spanish",
+        "no_english": True
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=data) as response:
+            if response.status == 200:
+                print("Solicitud exitosa.")
+                response_json = await response.json()
+            else:
+                print("Error en la solicitud:", response.status)
+                await ctx.send(f"Error en la solicitud: {response.status}")
+                return
+
+    # Extraer datos
+    data = response_json
+    primer_kanji_literal = data["kanji"][0]["literal"]
+    primer_glosses = ', '.join(data["words"][0]["senses"][0]["glosses"])
+    audio_url = "https://jotoba.de" + data["words"][0]["audio"]
+
+    # Crear y enviar el mensaje
+    mensaje = (f"**Kanji**: {primer_kanji_literal}\n"
+               f"**Significado**: {primer_glosses}\n"
+               f"**Audio**: [Escuchar]({audio_url})")
+    await ctx.send(mensaje)
 
 client.run(token_1.token())
