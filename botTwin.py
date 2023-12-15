@@ -1,12 +1,13 @@
 import discord
 from discord.ext import commands
+from discord import *
 import random
 import token_1
 import aiohttp
 import asyncio
 
-import subprocess
-import json
+from AudioButton import AudioButton
+
 client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 @client.event
@@ -115,23 +116,31 @@ async def buscarPalabra(ctx, *, palabra: str):
     async with aiohttp.ClientSession() as session:
         async with session.post(url, json=data) as response:
             if response.status == 200:
-                print("Solicitud exitosa.")
                 response_json = await response.json()
             else:
-                print("Error en la solicitud:", response.status)
                 await ctx.send(f"Error en la solicitud: {response.status}")
                 return
 
     # Extraer datos
-    data = response_json
-    primer_kanji_literal = data["kanji"][0]["literal"]
-    primer_glosses = ', '.join(data["words"][0]["senses"][0]["glosses"])
-    audio_url = "https://jotoba.de" + data["words"][0]["audio"]
+    kanji_data = response_json.get('kanji', [{}])[0]
+    word_data = response_json.get('words', [{}])[0]
+    primer_kanji_literal = kanji_data.get("literal", "No disponible")
+    primer_glosses = ', '.join(word_data.get("senses", [{}])[0].get("glosses", ["No disponible"]))
+    
+    # Verificar si hay una URL de audio
+    audio_url = word_data.get("audio")
+    if audio_url:
+        audio_url = "https://jotoba.de" + audio_url
+        view = AudioButton(audio_url)  # Crear la vista con el botón si hay audio
+    else:
+        view = None  # No crear la vista si no hay audio
 
-    # Crear y enviar el mensaje
-    mensaje = (f"**Kanji**: {primer_kanji_literal}\n"
-               f"**Significado**: {primer_glosses}\n"
-               f"**Audio**: [Escuchar]({audio_url})")
-    await ctx.send(mensaje)
+    # Crear el embed
+    embed = discord.Embed(title=f"Resultado para: {palabra}", color=0xDEADBF)
+    embed.add_field(name="Kanji", value=primer_kanji_literal, inline=False)
+    embed.add_field(name="Significado", value=primer_glosses, inline=False)
+
+    # Enviar el embed con o sin el botón
+    await ctx.send(embed=embed, view=view)
 
 client.run(token_1.token())
